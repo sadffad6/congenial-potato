@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户注册</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> <!-- 导入 SweetAlert2 库，用于显示提示信息 -->
+    <style>
+        body {
+            background-image: url('https://pic1.zhimg.com/c0e6a1fb76775b05fc5acf8200ab3b8c_r.jpg');
+        }
+    </style>
+</head>
+<body>
+<h1 style="color:white;text-align: center;">用户注册</h1>
+{% load static %}
+<script type="text/javascript" src="{% static '/js/user_add.js' %}" ></script>
+<div style="text-align: center; color:white">
+<form method="POST" action="/login/user_add/" novalidate >
+    {% csrf_token %}
+    {% for field in form %}
+        <div>  {{field.label}}:{{ field }}</div>
+        <span style="color:red"> {{ field.errors.0 }}</span>
+    {% endfor %}
+    {% if num == 1 %}
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: '注册失败',
+                text: '用户名已存在，请尝试其他用户名',
+                confirmButtonText: 'OK', // 更改确认按钮文本为 OK
+                // 在点击确认按钮后执行清空输入框操作
+                onAfterClose: function() {
+                    document.querySelectorAll('input[type="text"], input[type="password"]').forEach(function(input) {
+                        input.value = '';
+                    });
+                }
+            });
+        </script>
+    {% endif %}
+    <input type="submit" value="Submit" >
+</form>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: '注册成功',
+                    text: '{{ message }}'
+                });
+            </script>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+</body>
+</html>

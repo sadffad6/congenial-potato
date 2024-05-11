@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主界面</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> <!-- 导入 SweetAlert2 库，用于显示提示信息 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- 导入 Font Awesome 图标库 -->
+    <style>
+        body {
+            background-image: url('https://pic1.zhimg.com/c0e6a1fb76775b05fc5acf8200ab3b8c_r.jpg');
+            margin: 0;
+            padding: 0;
+        }
+        #userProfile {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+            display: flex; /* 将头像、用户名、设置和退出按钮放在同一行 */
+            align-items: center; /* 垂直居中 */
+            z-index: 1000; /* 设置z-index确保不被导航栏遮挡 */
+            cursor: pointer; /* 添加鼠标指针样式 */
+        }
+        #userProfile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 20px; /* 增大头像和用户名之间的间距 */
+        }
+        #username {
+            margin-right: 20px; /* 增大用户名和设置按钮之间的间距 */
+        }
+        #settingsButton {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #border {
+            position: fixed;
+            top: 0;
+            right: -400px; /* 初始时隐藏在屏幕外 */
+            transition: right 0.3s ease; /* 添加过渡效果 */
+            background-color: orange; /* 设置导航栏颜色为红色 */
+            width: 200px;
+            height: 100%;
+            padding: 20px;
+            z-index: 999; /* 设置z-index确保导航栏在最上层 */
+        }
+        #border.hidden {
+            right: -400px; /* 隐藏导航栏 */
+        }
+        #border ul {
+            list-style: none;
+            padding: 0;
+        }
+        #border li {
+            margin-bottom: 10px;
+            color: white;
+            cursor: pointer; /* 添加鼠标指针样式 */
+        }
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: white;
+        }
+        #logoutButton {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            border: 2px solid white; /* 设置退出按钮边框为白色 */
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #logoutButton:hover {
+            background-color: white;
+            color: red; /* 鼠标悬停时设置按钮颜色为红色 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 用户信息显示 -->
+    <div id="userProfile" onclick="toggleBorder()"> <!-- 修改点击事件为切换导航栏显示与隐藏的函数 -->
+        <img src="https://ts1.cn.mm.bing.net/th/id/R-C.0f7e0f8f147bb9dfafc5e4c3bece59f2?rik=auXMf%2b3yZ3xMLQ&riu=http%3a%2f%2fimg.qqtouxiangzq.com%2f6%2f1182%2f32.jpg&ehk=kLA%2fNQgc8j3Poiz5Hva1NiVpJlwbSQosepCOeN5wde4%3d&risl=&pid=ImgRaw&r=0" alt="默认头像">
+        <span id="username">{{ name }}</span>
+        <button id="settingsButton"><i class="fas fa-cog"></i></button> <!-- 使用 Font Awesome 图标作为设置按钮 -->
+    </div>
+
+    <!-- 导航栏内容 -->
+    <div id="border" class="hidden" onclick="closeBorder()"> <!-- 添加点击事件为关闭导航栏的函数 -->
+        <span id="closeButton">X</span>
+        <ul>
+            <li onclick="changeUsername({{ uid }})">修改信息</li>
+
+        </ul>
+        <input id="logoutButton" type="button" value="退出" onclick="logout()">
+    </div>
+
+    <!-- JavaScript 代码 -->
+    {% load static %}
+<script type="text/javascript" src="{% static '/js/home.js' %}" ></script>
+<script>
+
+
+// 在页面加载时更新用户信息
+
+function logout() {
+        var userId = "{{ uid }}"; // 获取用户ID
+        // 发送 POST 请求到后端执行退出操作
+        fetch('/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF Token，确保请求的安全性
+            },
+            body: 'user_id=' + userId
+        })
+        .then(response => {
+            if (response.ok) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '退出成功',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // 重定向到登录页面或其他页面
+                    window.location.href = '/login/';  // 假设登录页面的URL路径为'/login/'
+                });
+            } else {
+                // 退出失败，显示提示信息
+                Swal.fire({
+                    icon: 'error',
+                    title: '退出失败',
+                    text: '请稍后再试'
+                });
+            }
+        })
+        .catch(error => {
+            // 捕获异常情况，显示提示信息
+            Swal.fire({
+                icon: 'error',
+                title: '出现错误',
+                text: '请稍后再试'
+            });
+            console.error('请求错误:', error);
+        });
+    }
+function changeUsername(uid) {
+    var newname = prompt("请输入新用户名");
+    if (newname !== null && newname.trim() !== "") {
+        var data = {
+            new_username: newname.trim(), // 去除新用户名两端的空格
+            account: uid
+        };
+
+        // Dynamically construct the URL based on the current username
+        var url = '/login/' + uid + '/home/';
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '用户名修改成功！',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    window.location.reload(); // 重新加载页面
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: '用户名修改失败，请稍后重试。',
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: '出现错误',
+                text: '请稍后再试'
+            });
+            console.error('请求错误:', error);
+        });
+    }
+}
+
+</script>
+</body>
+</html>

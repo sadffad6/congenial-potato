@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script> <!-- 导入 SweetAlert2 库，用于显示提示信息 -->
+    <style>
+        body {
+            background-image: url('https://pic1.zhimg.com/c0e6a1fb76775b05fc5acf8200ab3b8c_r.jpg');
+        }
+    </style>
+</head>
+<body>
+<h1 style="color:white;text-align: center;">用户登录</h1>
+{% load static %}
+<script type="text/javascript" src="{% static '/js/login.js' %}" ></script>
+<div style="text-align: center; color:white">
+    <form method="POST" action="/login/" novalidate >
+        {% csrf_token %}
+        {% for field in form %}
+            <div>  {{field.label}}:{{ field }}</div>
+            <span style="color:white;"> {{ field.errors.0 }}</span>
+
+        {% endfor %}
+        <div><label for="remember"></label><input type="checkbox" name="remember" id="remember" {% if remember %}checked{% endif %}><span>记住账号</span></div>
+        <div>
+            <span><input type="submit" value="Submit" ></span>
+            <span><input type="button" value="注册" onclick="location.href='user_add'"></span>
+        </div>
+        {% if num == 1 %}
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: '登录失败',
+                    text: '用户名或密码错误，请重试'
+                });
+            </script>
+        {% elif num == 2 %}
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: '登录失败',
+                    text: '账户已被禁用，请联系管理员'
+                });
+            </script>
+        {% elif num == 3 %}
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: '登录成功',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // 在登录成功后，你可以重定向到用户主界面或其他页面
+                    window.location.href = '/user_profile/';
+                });
+            </script>
+        {% endif %}
+    </form>
+</div>
+
+</body>
+</html>
